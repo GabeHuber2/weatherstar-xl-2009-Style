@@ -1,16 +1,29 @@
+if(appearanceSettings.skipSetup == true){
+    setTimeout(() => {
+        $('#settings-menu').fadeOut(0);
+        $('#settings-menu-content').fadeOut(0);
+        setTimeout(() => {
+            locationJS();
+            setTimeout(startButton, 100);
+        }, 100);
+    }, 10);
+}
+
 setTimeout(() => {
-    $("#settings-menu .version").text(`Version ${appearanceSettings.version}`);
+    $(".version").text(`Version ${appearanceSettings.version}`);
     $("#styles").append(`<link rel="stylesheet" href="wxstarxl32${appearanceSettings.graphicsPackage}.css">`);
     setTimeout(() => {  
         $("#styles").children('link').first().remove();
     }, 10);
 }, 10);
+
 setTimeout(() => {
     $('.locdisplayname')
         .text(locationConfig.mainCity.displayname + (locationConfig.mainCity.state != null ? ", " + locationConfig.mainCity.state : (locationConfig.mainCity.stateFull != null ? ", " + locationConfig.mainCity.stateFull : '')));
+    $('.maincityextraname').text(locationConfig.mainCity.extraname);
     shrinkLocDisplayName();
 }, 1500)
-
+var extranameval = undefined;
 function startButton() {
     if(locationConfig.mainCity.displayname == undefined){
         $(".locwarning").fadeIn(0);
@@ -33,30 +46,53 @@ function startButton() {
     startProgram();
 }
 
-function locSearch() {
-    var locQuery = document.getElementById("loclookup").value;
+function locSearch(page) {
+    var locQuery = page === 'main' ? document.getElementById("loclookup").value : document.getElementById("loclookup2").value;
     if (locQuery == "") {
         $(".locwarning").fadeIn(0);
         setTimeout(() => { $('.locwarning').fadeOut(1000); }, 2500)
+        $(".locwarning2").fadeIn(0);
+        setTimeout(() => { $('.locwarning2').fadeOut(1000); }, 2500)
         return;
     }
-    queryname = locQuery;
+    mainquery = locQuery.split("{")[0];
+    mainquerydisplay = locQuery.endsWith("}") ? locQuery.split("{")[1].replaceAll("}","") : undefined;
     console.log(`Searching for ${locQuery}`);
     locationJS();
     setTimeout(() => {
         if (queryFail) {
-            $('.locwarning').text("ERROR: Location search failed.");
-            $('.locwarning').fadeIn(0);
-            setTimeout(() => { $('.locwarning').fadeOut(1000); }, 2500);
-            setTimeout(() => { $('.locwarning').text("ERROR: Put in a value."); }, 4000);
+            if(page == 'main'){
+                $('.locwarning').text("ERROR: Location search failed.");
+                $('.locwarning').fadeIn(0);
+                setTimeout(() => { $('.locwarning').fadeOut(1000); }, 2500);
+                setTimeout(() => { $('.locwarning').text("ERROR: Put in a value."); }, 4000);
+            } else {
+                $('.locwarning2').text("ERROR: Location search failed.");
+                $('.locwarning2').fadeIn(0);
+                setTimeout(() => { $('.locwarning2').fadeOut(1000); }, 2500);
+                setTimeout(() => { $('.locwarning2').text("ERROR: Put in a value."); }, 4000);
+            }
             return;
         }
         $('.locdisplayname')
             .text(locationConfig.mainCity.displayname + (locationConfig.mainCity.state != null ? ", " + locationConfig.mainCity.state : (locationConfig.mainCity.stateFull != null ? ", " + locationConfig.mainCity.stateFull : '')));
+        $('.maincitydisplayname')
+            .text(locationConfig.mainCity.displayname + (locationConfig.mainCity.state != null ? ", " + locationConfig.mainCity.state : (locationConfig.mainCity.stateFull != null ? ", " + locationConfig.mainCity.stateFull : '')));
+        $('.maincityextraname').text(locationConfig.mainCity.extraname);
         shrinkLocDisplayName();
         $('.locsuccess').fadeIn(0);
+        $('.locsuccess2').fadeIn(0);
+        var elDivs = ["i","ii","iii","iv","v","vi","vii","viii"];
+        for(var i = 0; i < 8; i++){
+            try {
+                $(`.extracity.${elDivs[i]} .extrcitydisplayname`).text(locationConfig.eightCities.cities[i].displayname + (locationConfig.eightCities.cities[i].state != null ? ", " + locationConfig.eightCities.cities[i].state : (locationConfig.eightCities.cities[i].stateFull != null ? ", " + locationConfig.eightCities.cities[i].stateFull : '')))
+            } catch(error){
+                $(`.extracity.${elDivs[i]} .extrcitydisplayname`).text("");
+            }
+        }
         setTimeout(() => { 
             $('.locsuccess').fadeOut(1000);
+            $('.locsuccess2').fadeOut(1000);
             grabData();
         }, 2500)
     }, 1500)
@@ -77,7 +113,7 @@ document.addEventListener("DOMContentLoaded", () => {
         .addEventListener('keydown', (event) => {
             if (event.key == "Enter") {
                 event.preventDefault();
-                locSearch();
+                locSearch('main');
                 //i wanna make it look like it was pressed
                 $('.locsearch').css({
                     'background-color': '#323741',
@@ -95,6 +131,27 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         })
 
+    document.getElementById("loclookup2")
+        .addEventListener('keydown', (event) => {
+            if (event.key == "Enter") {
+                event.preventDefault();
+                locSearch('advloc');
+                //i wanna make it look like it was pressed
+                $('.locsearch2').css({
+                    'background-color': '#323741',
+                    'color': '#fff'
+                });
+            }
+        })
+    document.getElementById("loclookup2")
+        .addEventListener('keyup', (event) => {
+            if (event.key == "Enter") {
+                $('.locsearch2').css({
+                    'background-color': '',
+                    'color': ''
+                });
+            }
+        })
 
     document.getElementById("songinput")
         .addEventListener('change', (event) => {
@@ -119,7 +176,9 @@ document.addEventListener("DOMContentLoaded", () => {
             } else {
                 audioSettings.order = [`Track ${parseInt(event.target.value)}`];
             }
+            console.log(`Track ${parseInt(event.target.value)}`);
             audioPlayer.buildPlaylist();
+            console.log(audioPlayer.playlist);
             //console.log($('#songinput').val('selectedvalue'));
         })
 
@@ -156,6 +215,17 @@ document.addEventListener("DOMContentLoaded", () => {
                 ]
                 audioPlayer.buildPlaylist();
             }
+        })
+    
+    document.getElementById("locloadconfiginput")
+        .addEventListener("change", (event) =>{
+            //console.log(event);
+            jsonFuncs()
+        })
+
+    document.getElementById("locextraname")
+        .addEventListener("change", (event) =>{
+            extranameval = event.target.value;
         })
 })
 
@@ -338,17 +408,207 @@ function versionSettings(fade, version){
             $(".versionwarning").fadeOut(500);
         }, 4000);
         return;
-    }
-    if(appearanceSettings.aspectRatio == 3/2){
-        $("#styles").append(`<link rel="stylesheet" href="wxstarxl32${version}.css">`);
-        setTimeout(() => {  
-            $("#styles").children('link').first().remove();
-        }, 10);
-    } else if(appearanceSettings.aspectRatio == 4/3){
-        $("#styles").append(`<link rel="stylesheet" href="wxstarxl43${version}.css">`);
+        // $("#styles").append(`<link rel="stylesheet" href="css/wxstarxlv1.css">`);
+        // setTimeout(() => {  
+        //     $("#styles").children('link').first().remove();
+        // }, 10);
+    } else {
+        $("#styles").append(`<link rel="stylesheet" href="wxstarxl${appearanceSettings.aspectRatio == 3/2 ? "32" : "43"}${version}.css">`);
         setTimeout(() => {  
             $("#styles").children('link').first().remove();
         }, 10);
     }
     appearanceSettings.graphicsPackage = version;
+}
+
+function locationSetting(fade){
+    if(fade == "in"){
+        $("#settings-menu-content").fadeOut(500);
+        $('.xllogo').fadeOut(500);
+        setTimeout(() => {
+            $("#location-settings").fadeIn(500);
+        }, 500);
+    }
+    if (fade == "out") {
+        $("#location-settings").fadeOut(500);
+        setTimeout(() => {
+            $('.xllogo').fadeIn(500);
+            $("#settings-menu-content").fadeIn(500);
+        }, 500);
+    }
+    $('.maincitydisplayname').text(locationConfig.mainCity.displayname + (locationConfig.mainCity.state != null ? ", " + locationConfig.mainCity.state : (locationConfig.mainCity.stateFull != null ? ", " + locationConfig.mainCity.stateFull : '')));
+    $('.maincityextraname').text(locationConfig.mainCity.extraname);
+    var elDivs = ["i","ii","iii","iv","v","vi","vii","viii"];
+    for(let i = 0; i < locationConfig.eightCities.cities.length; i++){
+        setTimeout(() =>{
+            $(`.extracity.${elDivs[i]} .extrcitydisplayname`).text(locationConfig.eightCities.cities[i].displayname + (locationConfig.eightCities.cities[i].state != null ? ", " + locationConfig.eightCities.cities[i].state : (locationConfig.eightCities.cities[i].stateFull != null ? ", " + locationConfig.eightCities.cities[i].stateFull : '')))
+        }, 20*i)
+    }
+    $('.locdisplayname')
+        .text(locationConfig.mainCity.displayname + (locationConfig.mainCity.state != null ? ", " + locationConfig.mainCity.state : (locationConfig.mainCity.stateFull != null ? ", " + locationConfig.mainCity.stateFull : '')));
+}
+
+function saveLocationSettings(fadesuccess){
+    locationSettings.mainCity.autoFind = false;
+    locationSettings.mainCity.displayname = locationConfig.mainCity.displayname;
+    locationSettings.mainCity.extraname = locationConfig.mainCity.extraname;
+    locationSettings.mainCity.type = "geocode";
+    locationSettings.mainCity.val = `${locationConfig.mainCity.lat},${locationConfig.mainCity.lon}`;
+    for(var i = 0; i < 8; i++){
+        if(newEightCities[i].info != false){
+            locationConfig.eightCities.cities[i] = newEightCities[i];
+        }
+    }
+    setTimeout(() => {
+        locationSettings.eightCities.autoFind = false;
+        for(var j = 0; j < 8; j++){
+            locationSettings.eightCities.cities[j].displayname = locationConfig.eightCities.cities[j].displayname;
+            locationSettings.eightCities.cities[j].type = "geocode";
+            locationSettings.eightCities.cities[j].val = `${locationConfig.eightCities.cities[j].lat},${locationConfig.eightCities.cities[j].lon}`;
+        }
+        setTimeout(() => {
+            if(fadesuccess){
+                console.log(locationSettings);
+                console.log(locationConfig);
+                $('.extralocationsuccess').fadeIn(0);
+
+                setTimeout(() => {
+                    $('.extralocationsuccess').fadeOut(1000);
+                    setTimeout(() =>{},1500);
+                }, 2500);
+            }
+        }, 500);
+    }, 500);
+}
+
+var cookieDivs = ["One","Two","Three","Four","Five","Six","Seven","Eight"]
+function saveLocationCookies(){
+    saveLocationSettings()
+    setTimeout(() => {
+        try {
+            document.cookie = `mainCityAutoFind=false`;
+            document.cookie = `mainCityName=${locationConfig.mainCity.displayname}`;
+            document.cookie = `mainCityExtraName=${locationConfig.mainCity.extraname}`;
+            document.cookie = `mainCityType=geocode`;
+            document.cookie = `mainCityVal=${locationConfig.mainCity.lat},${locationConfig.mainCity.lon}`;
+            document.cookie = `eightCitiesAutoFind=false`;
+            for(var i = 0; i < locationConfig.eightCities.cities.length; i++){
+                document.cookie = `eightCitiesName${cookieDivs[i]}=${locationConfig.eightCities.cities[i].displayname}`;
+                document.cookie = `eightCitiesType${cookieDivs[i]}=geocode`;
+                document.cookie = `eightCitiesVal${cookieDivs[i]}=${locationConfig.eightCities.cities[i].lat},${locationConfig.eightCities.cities[i].lon}`;
+            }
+            setTimeout(() => {
+                $('.extralocationsuccess').text("Success! Cookies saved.");
+                $('.extralocationsuccess').fadeIn(0);
+
+                setTimeout(() => {
+                    $('.extralocationsuccess').fadeOut(1000);
+                    setTimeout(() => {$('.extralocationsuccess').text("Success! Locations changed.");},1500);
+                }, 2500);
+            }, 250);
+        }catch(error){
+            $('.extralocationfail').text("ERROR: Something went wrong.");
+            $('.extralocationfail').fadeIn(0);
+            setTimeout(() => {
+                $('.extralocationfail').fadeOut(1000);
+                setTimeout(() =>{$('.extralocationfail').text(`ERROR: Location ${1}'s search failed.`);},1500);
+            }, 2500);
+        }
+    }, 1000);
+}
+function loadLocationCookies(){
+    if(!document.cookie){
+        $('.extralocationfail').text("You don't have any cookies saved!");
+        $('.extralocationfail').fadeIn(0)
+        setTimeout(() => {
+            $('.extralocationfail').fadeOut(1000);
+            setTimeout(() =>{$('.extralocationfail').text(`ERROR: Location ${1}'s search failed.`);},1500);
+        }, 2500);
+        return;
+    }
+    locationSettings.mainCity.autoFind = getCookie("mainCityAutoFind") == "false" ? false : true;
+    locationSettings.eightCities.autoFind = getCookie("eightCitiesAutoFind") == "false" ? false : true;
+    locationSettings.mainCity.displayname = getCookie("mainCityName");
+    locationSettings.mainCity.extraname = getCookie("mainCityExtraName");
+    locationSettings.mainCity.type = getCookie("mainCityType");
+    locationSettings.mainCity.val = getCookie("mainCityVal");
+    for(let i = 0; i < locationSettings.eightCities.cities.length; i++){
+        locationSettings.eightCities.cities[i].displayname = getCookie(`eightCitiesName${cookieDivs[i]}`);
+        locationSettings.eightCities.cities[i].type = getCookie(`eightCitiesType${cookieDivs[i]}`);
+        locationSettings.eightCities.cities[i].val = getCookie(`eightCitiesVal${cookieDivs[i]}`);
+    }
+    setTimeout(() => {
+        locationJS()
+        setTimeout(() => {
+            console.log(locationSettings);
+            locationSetting(0);
+            $('.extralocationsuccess').text("Success! Cookies loaded.");
+            $('.extralocationsuccess').fadeIn(0);
+            setTimeout(() => {
+                $('.extralocationsuccess').fadeOut(1000);
+                setTimeout(() => {$('.extralocationsuccess').text("Success! Locations changed.");}, 1500);
+            }, 2500);
+        }, 500);
+    }, 500);
+}
+function downloadConfig(){
+    saveLocationSettings()
+    setTimeout(() => {
+        var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(locationSettings));
+        var downloadAnchorNode = document.createElement('a');
+        downloadAnchorNode.setAttribute("href",     dataStr);
+        downloadAnchorNode.setAttribute("download", `${locationConfig.mainCity.displayname}-${Date.now()}.json`);
+        document.body.appendChild(downloadAnchorNode); // required for firefox
+        downloadAnchorNode.click();
+        downloadAnchorNode.remove();
+    }, 1500);
+}
+function jsonFuncs() {
+  //credit: MapGuy
+  const fileInput = document.getElementById('locloadconfiginput');
+  const file = fileInput.files[0];
+  if (!file) {
+    $('.json-warning').fadeIn(0)
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const json = JSON.parse(e.target.result);
+      console.log(json);
+      Object.assign(locationSettings, json);
+      console.log("Updated location settings:", locationSettings);
+      locationJS()
+      setTimeout(() => {
+        locationSetting(0);
+        $('.extralocationsuccess').text("Success! JSON loaded.");
+        $('.extralocationsuccess').fadeIn(0)
+        setTimeout(() => {
+            $('.extralocationsuccess').fadeOut(1000);
+            setTimeout(() => {$('.extralocationsuccess').text("Success! Locations changed.");}, 1500);
+        }, 2500);
+      }, 1000);
+    } catch (err) {
+      console.error("Error parsing JSON:", err);
+      $('.extralocationfail').text("ERROR: Something went wrong.");
+      $('.extralocationfail').fadeIn(0)
+      setTimeout(() => {
+        $('.extralocationfail').fadeOut(1000);
+        setTimeout(() =>{$('.extralocationfail').text(`ERROR: Location ${1}'s search failed.`);},1500);
+      }, 2500);
+    }
+  };
+  reader.readAsText(file);
+}
+
+function saveExtraName(){
+    if(extranameval == undefined){
+        return;
+    }
+    locationConfig.mainCity.extraname = extranameval;
+    $('.maincityextraname').text(extranameval);
+    setTimeout(() => {
+        extranameval = undefined;
+    }, 500);
 }
