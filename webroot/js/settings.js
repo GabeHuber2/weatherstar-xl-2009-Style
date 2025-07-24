@@ -262,11 +262,11 @@ function setFlavor(flavor) {
             ldlBothCheck();
             slideSettings.flavor = 'D';
             slideSettings.order = [
-                { function: 'currentConditions' },
                 { function: "bulletin" },
+                { function: 'currentConditions' },
+                { function: 'dopplerRadar' },
                 { function: 'dayDesc' },
-                { function: 'weekAhead' },
-                { function: 'dopplerRadar' }
+                { function: 'weekAhead' }
             ]
             $('.flv.onemin-button').css("background-color", "#323741");
             $('.flv.onemin-button').css("color", "#ff0000");
@@ -279,9 +279,9 @@ function setFlavor(flavor) {
             ldlBothCheck();
             slideSettings.flavor = 'K';
             slideSettings.order = [
+                { function: "bulletin" },
                 { function: 'currentConditions' },
                 { function: 'nearbyCities' },
-                { function: "bulletin" },
                 { function: 'dopplerRadar' },
                 { function: 'dayDesc' },
                 { function: 'weekAhead' }
@@ -296,9 +296,9 @@ function setFlavor(flavor) {
         case 'm':
             slideSettings.flavor = 'M';
             slideSettings.order = [
+                { function: "bulletin" },
                 { function: "currentConditions" },
                 { function: "nearbyCities" },
-                { function: "bulletin" },
                 { function: "dopplerRadar" },
                 { function: "almanac" },
                 { function: "daypartForecast" },
