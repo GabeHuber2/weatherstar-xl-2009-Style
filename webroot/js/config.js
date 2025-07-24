@@ -18,9 +18,9 @@ var slideSettings = {
     slideDelay: 10000, //Set however long you want the slide to be on the screen for. Default is 10000.
     flavor: '',
     order: [
+        {function:"bulletin"},
         {function:"currentConditions"},
         {function:"nearbyCities"},
-        {function:"bulletin"},
         {function:"dopplerRadar"},
         {function:"almanac"},
         {function:"daypartForecast"},
